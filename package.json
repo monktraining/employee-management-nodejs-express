@@ -32,6 +32,7 @@
     "ejs": "^2.7.1",
     "express": "^4.17.1",
     "morgan": "^1.9.1",
+    "msnodesqlv8": "^0.8.4",
     "mssql": "^5.1.0",
     "nodemon": "^1.19.3",
     "typescript": "^3.6.4"

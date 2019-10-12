@@ -1,5 +1,5 @@
 import { Request, Response} from 'express';
-import {ConnectionPool, config, PreparedStatement, Int, VarChar} from 'mssql';
+import {ConnectionPool, config, PreparedStatement, Int, VarChar} from 'mssql/msnodesqlv8';
 
 export default class EmployeeController {
     private readonly connectionPool: ConnectionPool; 
@@ -11,8 +11,10 @@ export default class EmployeeController {
             const connectionPool = new ConnectionPool({
                 database: "Employees",
                 server: 'CHINTANASUSTUF',
-                user: 'sa',
-                password: 'P@ssw0rd'                
+                driver: 'msnodesqlv8',
+                options: {
+                    trustedConnection: true
+                }                
             });       
             const connection = await connectionPool.connect();
             const employees = await connection.query('SELECT * FROM Employees');
@@ -33,8 +35,10 @@ export default class EmployeeController {
         const connectionPool = new ConnectionPool({
             database: "Employees",
             server: 'CHINTANASUSTUF',
-            user: 'sa',
-            password: 'P@ssw0rd'                
+            driver: 'msnodesqlv8',
+            options: {
+                trustedConnection: true
+            }                
         }); 
         const connection = await connectionPool.connect();
         const request = connection.request();
@@ -48,13 +52,14 @@ export default class EmployeeController {
     }
     public async editEmployee(req: Request, res: Response) {        
         let emp = req.body;    
-        emp.Id = req.query["id"];
         const connectionPool = new ConnectionPool({
             database: "Employees",
             server: 'CHINTANASUSTUF',
-            user: 'sa',
-            password: 'P@ssw0rd'                
-        }); 
+            driver: 'msnodesqlv8',
+            options: {
+                trustedConnection: true
+            }                
+        });
         const connection = await connectionPool.connect();
         const request = connection.request();
         request.input('name', VarChar(50),emp.Name);
