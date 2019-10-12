@@ -1,18 +1,66 @@
-import {Request, Response} from 'express';
+import { Request, Response} from 'express';
+import {ConnectionPool, config, PreparedStatement, Int, VarChar} from 'mssql';
 
 export default class EmployeeController {
-
-    public getEmployees(req: Request, res: Response) {
-        res.render('employee/employees');
-    }    
-
-    public getAddEmployeeView(req: Request, res: Response) {
-        res.render('employee/addEmployee');
+    private readonly connectionPool: ConnectionPool; 
+    constructor(){
+        
+    }
+    public async getEmployees(req: Request, res: Response) {
+        try {     
+            const connectionPool = new ConnectionPool({
+                database: "Employees",
+                server: 'CHINTANASUSTUF',
+                user: 'sa',
+                password: 'P@ssw0rd'                
+            });       
+            const connection = await connectionPool.connect();
+            const employees = await connection.query('SELECT * FROM Employees');
+            connection.close();
+            res.render('employees/employees', {employees: employees.recordset});
+        }
+        catch(ex){
+            console.error(ex);
+        }
     }
 
-    public addEmployee(req: Request, res: Response) {
-        let emp = req.body;
-        // Some to save
-        res.redirect('/employees');
+    public getEmployeeView(req: Request, res: Response) {
+        res.render('employees/addEmployee');
+    }
+
+    public async addEmployee(req: Request, res: Response) {        
+        const emp = req.body;        
+        const connectionPool = new ConnectionPool({
+            database: "Employees",
+            server: 'CHINTANASUSTUF',
+            user: 'sa',
+            password: 'P@ssw0rd'                
+        }); 
+        const connection = await connectionPool.connect();
+        const request = connection.request();
+        request.input('name',VarChar(50),emp.Name);
+        const result = await request.query('Insert INTO Employees (Name) VALUES (@name)');        
+        connection.close();
+        res.redirect('/employees');        
+    }
+    public getEditEmployeeView(req: Request, res: Response) {
+        res.render('employees/editEmployee');
+    }
+    public async editEmployee(req: Request, res: Response) {        
+        let emp = req.body;    
+        emp.Id = req.query["id"];
+        const connectionPool = new ConnectionPool({
+            database: "Employees",
+            server: 'CHINTANASUSTUF',
+            user: 'sa',
+            password: 'P@ssw0rd'                
+        }); 
+        const connection = await connectionPool.connect();
+        const request = connection.request();
+        request.input('name', VarChar(50),emp.Name);
+        request.input('id', Int, emp.Id);
+        await request.query('UPDATE Employees SET Name = @name WHERE ID = @id');
+        connection.close();
+        res.redirect('/employees');        
     }
 }
