@@ -1,14 +1,17 @@
 import { Router } from 'express';
 import EmployeeController  from '../controllers/employeeController';
+import ConnectionFactory from '../utils/connectionFactory';
 
 const employeeRouter = Router();
-const employeeController = new EmployeeController();
+const connectionFactory = new ConnectionFactory();
+const employeeController = new EmployeeController(connectionFactory);
 
-employeeRouter.get('/',employeeController.getEmployees);
-employeeRouter.get('/add', employeeController.getEmployeeView);
-employeeRouter.post('/add', employeeController.addEmployee);
+// Reason to use arrow function: https://stackoverflow.com/questions/45643005/why-is-this-undefined-in-this-class-method
+employeeRouter.get('/', (...args) => employeeController.getEmployees(...args));
+employeeRouter.get('/add', (...args) => employeeController.getEmployeeView(...args));
+employeeRouter.post('/add', (...args) => employeeController.addEmployee(...args));
 
-employeeRouter.get('/edit', employeeController.getEditEmployeeView);
-employeeRouter.post('/edit/:id', employeeController.editEmployee);
+employeeRouter.get('/edit/:id', (...args) => employeeController.getEditEmployeeView(...args));
+employeeRouter.post('/edit/:id', (...args) => employeeController.editEmployee(...args));
 
 export default employeeRouter;

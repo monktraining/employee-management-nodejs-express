@@ -1,9 +1,14 @@
 <!DOCTYPE html>
 <html>
     <head>
-
+        <title>Employee listing</title>        
     </head>
     <body>
-        <h1>List Employees</h1>
+        <a href="/employees/add">Add Employee</a>
+        <ul>
+            <% for(let emp of employees) { %>
+                <li><%=emp.Name %></li>
+            <% } %>
+        </ul>
     </body>
 </html>

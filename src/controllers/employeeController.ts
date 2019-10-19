@@ -1,71 +1,53 @@
 import { Request, Response} from 'express';
-import {ConnectionPool, config, PreparedStatement, Int, VarChar} from 'mssql/msnodesqlv8';
+import {ConnectionPool, Int, VarChar, PreparedStatement} from 'mssql/msnodesqlv8';
+import ConnectionFactory from '../utils/connectionFactory';
 
-export default class EmployeeController {
-    private readonly connectionPool: ConnectionPool; 
-    constructor(){
+export default class EmployeeController {    
+    constructor(private readonly connectionFactory: ConnectionFactory){
         
     }
-    public async getEmployees(req: Request, res: Response) {
-        try {     
-            const connectionPool = new ConnectionPool({
-                database: "Employees",
-                server: 'CHINTANASUSTUF',
-                driver: 'msnodesqlv8',
-                options: {
-                    trustedConnection: true
-                }                
-            });       
-            const connection = await connectionPool.connect();
+    public async getEmployees(req: Request, res: Response, next: Function) {
+        try {                    
+            const connection: ConnectionPool = await this.connectionFactory.getConnection();
             const employees = await connection.query('SELECT * FROM Employees');
             connection.close();
-            res.render('employees/employees', {employees: employees.recordset});
-        }
-        catch(ex){
+            res.render('employee/employees', {employees: employees.recordset});
+        } catch (ex) {
             console.error(ex);
         }
     }
 
-    public getEmployeeView(req: Request, res: Response) {
-        res.render('employees/addEmployee');
+    public getEmployeeView(req: Request, res: Response, next: Function) {
+        res.render('employee/addEmployee');
     }
 
-    public async addEmployee(req: Request, res: Response) {        
-        const emp = req.body;        
-        const connectionPool = new ConnectionPool({
-            database: "Employees",
-            server: 'CHINTANASUSTUF',
-            driver: 'msnodesqlv8',
-            options: {
-                trustedConnection: true
-            }                
-        }); 
-        const connection = await connectionPool.connect();
+    public async addEmployee(req: Request, res: Response, next: Function) {        
+        const emp = req.body;                
+        const connection = await this.connectionFactory.getConnection();
         const request = connection.request();
         request.input('name',VarChar(50),emp.Name);
         const result = await request.query('Insert INTO Employees (Name) VALUES (@name)');        
         connection.close();
         res.redirect('/employees');        
     }
-    public getEditEmployeeView(req: Request, res: Response) {
-        res.render('employees/editEmployee');
+    public async getEditEmployeeView(req: Request, res: Response, next: Function) {
+        const connection = await this.connectionFactory.getConnection();
+        const ps = new PreparedStatement(connection);
+        ps.input('id', Int);
+        await ps.prepare('SELECT * FROM Employees WHERE Id = @id');
+        const empId = req.params.id;
+        const result = await ps.execute({id: empId});                        
+        await connection.close();
+        res.render('employee/editEmployee', {emp: result.recordset[0]});
     }
-    public async editEmployee(req: Request, res: Response) {        
-        let emp = req.body;    
-        const connectionPool = new ConnectionPool({
-            database: "Employees",
-            server: 'CHINTANASUSTUF',
-            driver: 'msnodesqlv8',
-            options: {
-                trustedConnection: true
-            }                
-        });
-        const connection = await connectionPool.connect();
+    public async editEmployee(req: Request, res: Response, next: Function) {        
+        let emp = req.body;            
+        const connection = await this.connectionFactory.getConnection();
         const request = connection.request();
         request.input('name', VarChar(50),emp.Name);
         request.input('id', Int, emp.Id);
         await request.query('UPDATE Employees SET Name = @name WHERE ID = @id');
-        connection.close();
+        await connection.close();
         res.redirect('/employees');        
     }
 }

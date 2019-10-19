@@ -17,7 +17,6 @@ router.use('/employees', employeeRouter);
 router.use('/', homeRouter);
 
 app.use('/', router);
-
-app.listen(3000,()=>{
+app.listen(3000,() => {
     console.log('Application is running at http://localhost:3000');
 });
