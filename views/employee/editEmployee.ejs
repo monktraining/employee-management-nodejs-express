@@ -5,9 +5,9 @@
     </head>
     <body>
         <form method="POST">
-            <input type="hidden" value="<%= emp.Id %>"/>
+            <input type="hidden" name="Id" value="<%= emp.Id %>"/>
             <span>Employee Name: </span>
-            <input type="text" name="name" value="<%= emp.Name %>"/>
+            <input type="text" name="Name" value="<%= emp.Name %>"/>
             <input type="submit" value="Edit"/>
         </form>
     </body>
