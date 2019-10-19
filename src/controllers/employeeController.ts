@@ -12,7 +12,7 @@ export default class EmployeeController {
         try {
             const connection: ConnectionPool = await this.connectionFactory.getConnection();
             const employees = await connection.query('SELECT * FROM Employees');
-            connection.close();
+            await connection.close();
             res.render('employee/employees', { employees: employees.recordset });
         } catch (ex) {
             this.d(ex);
@@ -28,8 +28,9 @@ export default class EmployeeController {
         const connection = await this.connectionFactory.getConnection();
         const request = connection.request();
         request.input('name', VarChar(50), emp.Name);
-        const result = await request.query('Insert INTO Employees (Name) VALUES (@name)');
-        connection.close();
+        request.input('profilepic', VarChar(200), req.file.filename);
+        await request.query('Insert INTO Employees (Name, ProfilePic) VALUES (@name, @profilepic)');
+        await connection.close();
         res.redirect('/employees');
     }
     public async getEditEmployeeView(req: Request, res: Response, next: Function) {
